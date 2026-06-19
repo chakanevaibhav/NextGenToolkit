@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { FileDown, Scissors, FileSignature, Layers } from "lucide-react";
+import { getServerSession } from "next-auth/next";
 import styles from "./page.module.css";
 
-export default function Home() {
+export default async function Home() {
+  const session = await getServerSession();
+
   return (
     <div className="container">
       <header className={styles.header}>
@@ -12,7 +15,11 @@ export default function Home() {
         </div>
         <nav className={styles.nav}>
           <Link href="/pricing" className="btn-secondary">Pricing</Link>
-          <Link href="/dashboard" className="btn-primary">Go to Dashboard</Link>
+          {session ? (
+            <Link href="/dashboard" className="btn-primary">Dashboard</Link>
+          ) : (
+            <Link href="/api/auth/signin" className="btn-primary">Sign In</Link>
+          )}
         </nav>
       </header>
 
