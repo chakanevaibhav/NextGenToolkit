@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LayoutDashboard, FileUp, Settings } from "lucide-react";
 import { getServerSession } from "next-auth/next";
 import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/lib/authOptions";
 import styles from "./dashboard.module.css";
 
 export default async function DashboardLayout({
@@ -9,7 +10,7 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   let plan = "Free Plan";
   let actionsUsed = 0;
   let maxActions = 3;

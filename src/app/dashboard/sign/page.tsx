@@ -5,8 +5,8 @@ import { UploadCloud, PenTool, FileSignature, Loader2, GripHorizontal } from "lu
 import { PDFDocument } from "pdf-lib";
 import { Document, Page, pdfjs } from "react-pdf";
 import Draggable, { DraggableData, DraggableEvent } from "react-draggable";
-import "react-pdf/dist/esm/Page/AnnotationLayer.css";
-import "react-pdf/dist/esm/Page/TextLayer.css";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 import styles from "./sign.module.css";
 
 // Set up pdfjs worker
