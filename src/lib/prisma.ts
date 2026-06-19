@@ -3,7 +3,7 @@ import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
 
 const libsql = createClient({
-  url: process.env.DATABASE_URL || "file:./dev.db",
+  url: "file:./dev.db",
 });
 
 const adapter = new PrismaLibSql(libsql);
