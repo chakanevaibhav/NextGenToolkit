@@ -18,6 +18,7 @@ export default function SignPage() {
   const [isSigning, setIsSigning] = useState(false);
   
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const draggableRef = useRef<HTMLDivElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [signatureData, setSignatureData] = useState<string | null>(null);
 
@@ -284,22 +285,26 @@ export default function SignPage() {
                 {/* Draggable Signature Overlay */}
                 {signatureData && (
                   <Draggable
+                    nodeRef={draggableRef}
                     position={sigPosition}
                     onDrag={handleDrag}
                     bounds="parent"
                   >
-                    <div style={{ 
-                      position: 'absolute', 
-                      top: 0, 
-                      left: 0, 
-                      width: sigSize.width, 
-                      height: sigSize.height,
-                      cursor: 'move',
-                      border: '2px dashed #6366f1',
-                      borderRadius: '4px',
-                      backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                      zIndex: 10
-                    }}>
+                    <div 
+                      ref={draggableRef}
+                      style={{ 
+                        position: 'absolute', 
+                        top: 0, 
+                        left: 0, 
+                        width: sigSize.width, 
+                        height: sigSize.height,
+                        cursor: 'move',
+                        border: '2px dashed #6366f1',
+                        borderRadius: '4px',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        zIndex: 10
+                      }}
+                    >
                       <img 
                         src={signatureData} 
                         alt="Signature Overlay" 

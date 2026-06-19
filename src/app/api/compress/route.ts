@@ -34,37 +34,73 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: `File exceeds the ${maxFileSizeMB}MB limit for your plan.` }, { status: 400 });
     }
 
-    // --- PLACEHOLDER FOR COMPRESSION ENGINE ---
-    // In a real scenario, this is where you would either:
-    // 1. Invoke a child process running Ghostscript (if hosted on a VPS/EC2).
-    // 2. Upload to S3 and trigger an AWS Lambda function for heavy lifting to avoid Vercel limits.
-    // 3. Call a third-party compression API.
-    
-    // For this mockup, we'll pretend the file was compressed by returning a slightly smaller buffer
-    // (Note: in a real implementation, truncating a PDF corrupts it, but for UI mockup this is fine, or we just return the original and pretend it's smaller)
     const arrayBuffer = await file.arrayBuffer();
-    // To keep the PDF valid for testing but simulate size reduction in the UI, we'll just return the original buffer but pass a fake smaller size in the header!
-    const mockCompressedBuffer = Buffer.from(arrayBuffer);
-    const simulatedCompressedSize = Math.floor(file.size * (compressionLevel === "extreme" ? 0.4 : 0.7));
+    const buffer = Buffer.from(arrayBuffer);
     
-    // Increment action usage since the action was "successful"
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { 
-        actionsUsed: { increment: 1 },
-        lastActionDate: new Date(),
-      },
-    });
+    // Create temporary files for ghostscript
+    const os = require("os");
+    const fs = require("fs");
+    const path = require("path");
+    const { execFile } = require("child_process");
+    const util = require("util");
+    const execFileAsync = util.promisify(execFile);
 
-    // Return the "compressed" file
-    return new NextResponse(mockCompressedBuffer, {
-      status: 200,
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="compressed_${file.name}"`,
-        "X-File-Size": simulatedCompressedSize.toString(),
-      },
-    });
+    const tmpDir = os.tmpdir();
+    const uniqueId = Date.now().toString() + Math.random().toString(36).substring(7);
+    const inputPath = path.join(tmpDir, `input_${uniqueId}.pdf`);
+    const outputPath = path.join(tmpDir, `output_${uniqueId}.pdf`);
+
+    // Write input buffer to disk
+    fs.writeFileSync(inputPath, buffer);
+
+    const gsLevel = compressionLevel === "extreme" ? "/screen" : "/ebook";
+
+    try {
+      // Run Ghostscript
+      await execFileAsync("gs", [
+        "-sDEVICE=pdfwrite",
+        "-dCompatibilityLevel=1.4",
+        `-dPDFSETTINGS=${gsLevel}`,
+        "-dNOPAUSE",
+        "-dQUIET",
+        "-dBATCH",
+        `-sOutputFile=${outputPath}`,
+        inputPath
+      ]);
+
+      // Read compressed file
+      const compressedBuffer = fs.readFileSync(outputPath);
+      const actualCompressedSize = compressedBuffer.byteLength;
+
+      // Clean up temp files
+      fs.unlinkSync(inputPath);
+      fs.unlinkSync(outputPath);
+
+      // Increment action usage since the action was "successful"
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { 
+          actionsUsed: { increment: 1 },
+          lastActionDate: new Date(),
+        },
+      });
+
+      // Return the actually compressed file
+      return new NextResponse(compressedBuffer, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/pdf",
+          "Content-Disposition": `attachment; filename="compressed_${file.name}"`,
+          "X-File-Size": actualCompressedSize.toString(),
+        },
+      });
+    } catch (gsError) {
+      console.error("Ghostscript error:", gsError);
+      // Clean up on failure
+      if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
+      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+      return NextResponse.json({ error: "Ghostscript compression failed. Please ensure Ghostscript is installed." }, { status: 500 });
+    }
   } catch (error) {
     console.error("Compression error:", error);
     return NextResponse.json({ error: "Compression failed" }, { status: 500 });
