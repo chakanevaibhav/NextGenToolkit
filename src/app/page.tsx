@@ -19,7 +19,7 @@ export default async function Home() {
           {session ? (
             <Link href="/dashboard" className="btn-primary">Dashboard</Link>
           ) : (
-            <Link href="/api/auth/signin" className="btn-primary">Sign In</Link>
+            <Link href="/api/auth/signin?callbackUrl=/dashboard" className="btn-primary">Sign In</Link>
           )}
         </nav>
       </header>

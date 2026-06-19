@@ -8,10 +8,12 @@ export default function CompressPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionLevel, setCompressionLevel] = useState("recommended");
+  const [compressedFile, setCompressedFile] = useState<{ url: string; name: string; size: number } | null>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
+      setCompressedFile(null); // Reset on new file
     }
   };
 
@@ -35,16 +37,15 @@ export default function CompressPage() {
         return;
       }
 
-      // Download the compressed file
+      const compressedSizeHeader = res.headers.get("X-File-Size");
       const blob = await res.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `compressed_${file.name}`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      
+      setCompressedFile({
+        url,
+        name: `compressed_${file.name}`,
+        size: compressedSizeHeader ? parseInt(compressedSizeHeader, 10) : blob.size
+      });
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -87,50 +88,87 @@ export default function CompressPage() {
             </div>
           </div>
           
-          <div className={styles.compressionOptions}>
-            <h3>Compression Level</h3>
-            <div className={styles.optionsGrid}>
-              <label className={styles.optionCard}>
-                <input 
-                  type="radio" 
-                  name="compression" 
-                  value="recommended" 
-                  checked={compressionLevel === "recommended"}
-                  onChange={(e) => setCompressionLevel(e.target.value)}
-                />
-                <div className={styles.optionContent}>
-                  <h4>Recommended</h4>
-                  <p>Good quality, good compression</p>
-                </div>
-              </label>
-              <label className={styles.optionCard}>
-                <input 
-                  type="radio" 
-                  name="compression" 
-                  value="extreme" 
-                  checked={compressionLevel === "extreme"}
-                  onChange={(e) => setCompressionLevel(e.target.value)}
-                />
-                <div className={styles.optionContent}>
-                  <h4>Extreme</h4>
-                  <p>Lower quality, highest compression</p>
-                </div>
-              </label>
+          {!compressedFile && (
+            <div className={styles.compressionOptions}>
+              <h3>Compression Level</h3>
+              <div className={styles.optionsGrid}>
+                <label className={styles.optionCard}>
+                  <input 
+                    type="radio" 
+                    name="compression" 
+                    value="recommended" 
+                    checked={compressionLevel === "recommended"}
+                    onChange={(e) => setCompressionLevel(e.target.value)}
+                  />
+                  <div className={styles.optionContent}>
+                    <h4>Recommended</h4>
+                    <p>Good quality, good compression</p>
+                  </div>
+                </label>
+                <label className={styles.optionCard}>
+                  <input 
+                    type="radio" 
+                    name="compression" 
+                    value="extreme" 
+                    checked={compressionLevel === "extreme"}
+                    onChange={(e) => setCompressionLevel(e.target.value)}
+                  />
+                  <div className={styles.optionContent}>
+                    <h4>Extreme</h4>
+                    <p>Lower quality, highest compression</p>
+                  </div>
+                </label>
+              </div>
             </div>
-          </div>
-          
-          <div className={styles.actionArea}>
-            <button className="btn-secondary" onClick={() => setFile(null)} disabled={isCompressing}>Cancel</button>
-            <button 
-              className="btn-primary" 
-              style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
-              onClick={handleCompress}
-              disabled={isCompressing}
-            >
-              {isCompressing ? <Loader2 size={18} className="spin" /> : <FileDown size={18} />}
-              {isCompressing ? "Compressing..." : "Compress PDF"}
-            </button>
-          </div>
+          )}
+
+          {compressedFile ? (
+            <div className={`glass-panel ${styles.successArea}`}>
+              <h3 style={{ color: "var(--success)" }}>Compression Complete!</h3>
+              <div className={styles.statsCard}>
+                <div className={styles.statItem}>
+                  <span>Original Size:</span>
+                  <strong>{(file.size / 1024 / 1024).toFixed(2)} MB</strong>
+                </div>
+                <div className={styles.statItem}>
+                  <span>New Size:</span>
+                  <strong style={{ color: "var(--success)" }}>{(compressedFile.size / 1024 / 1024).toFixed(2)} MB</strong>
+                </div>
+                <div className={styles.statItem}>
+                  <span>Saved:</span>
+                  <strong>{(((file.size - compressedFile.size) / file.size) * 100).toFixed(0)}%</strong>
+                </div>
+              </div>
+              <div className={styles.actionArea} style={{ marginTop: '20px' }}>
+                <button className="btn-secondary" onClick={() => {
+                  setFile(null);
+                  setCompressedFile(null);
+                }}>Compress Another</button>
+                <a 
+                  href={compressedFile.url} 
+                  download={compressedFile.name}
+                  className="btn-primary" 
+                  style={{ display: 'flex', gap: '8px', alignItems: 'center', textDecoration: 'none' }}
+                >
+                  <FileDown size={18} />
+                  Download Compressed PDF
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className={styles.actionArea}>
+              <button className="btn-secondary" onClick={() => setFile(null)} disabled={isCompressing}>Cancel</button>
+              <button 
+                className="btn-primary" 
+                style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
+                onClick={handleCompress}
+                disabled={isCompressing}
+              >
+                {isCompressing ? <Loader2 size={18} className="spin" /> : <FileDown size={18} />}
+                {isCompressing ? "Compressing..." : "Compress PDF"}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

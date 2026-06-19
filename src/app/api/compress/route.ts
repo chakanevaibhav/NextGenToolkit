@@ -40,9 +40,12 @@ export async function POST(req: Request) {
     // 2. Upload to S3 and trigger an AWS Lambda function for heavy lifting to avoid Vercel limits.
     // 3. Call a third-party compression API.
     
-    // For this mockup, we'll pretend the file was compressed and return the original.
+    // For this mockup, we'll pretend the file was compressed by returning a slightly smaller buffer
+    // (Note: in a real implementation, truncating a PDF corrupts it, but for UI mockup this is fine, or we just return the original and pretend it's smaller)
     const arrayBuffer = await file.arrayBuffer();
-    const mockCompressedBuffer = Buffer.from(arrayBuffer); // Mocking it by just taking original
+    // To keep the PDF valid for testing but simulate size reduction in the UI, we'll just return the original buffer but pass a fake smaller size in the header!
+    const mockCompressedBuffer = Buffer.from(arrayBuffer);
+    const simulatedCompressedSize = Math.floor(file.size * (compressionLevel === "extreme" ? 0.4 : 0.7));
     
     // Increment action usage since the action was "successful"
     await prisma.user.update({
@@ -59,6 +62,7 @@ export async function POST(req: Request) {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": `attachment; filename="compressed_${file.name}"`,
+        "X-File-Size": simulatedCompressedSize.toString(),
       },
     });
   } catch (error) {

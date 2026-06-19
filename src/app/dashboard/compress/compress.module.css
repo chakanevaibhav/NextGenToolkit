@@ -145,3 +145,35 @@
   gap: 16px;
   margin-top: 16px;
 }
+
+.successArea {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px;
+  align-items: center;
+  text-align: center;
+}
+
+.statsCard {
+  display: flex;
+  gap: 32px;
+  padding: 24px;
+  background-color: var(--bg-background);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  width: 100%;
+  justify-content: space-around;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 1.1rem;
+}
+
+.statItem span {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
