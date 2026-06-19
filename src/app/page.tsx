@@ -1,65 +1,61 @@
-import Image from "next/image";
+import Link from "next/link";
+import { FileDown, Scissors, FileSignature, Layers } from "lucide-react";
 import styles from "./page.module.css";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
+    <div className="container">
+      <header className={styles.header}>
+        <div className={styles.logo}>
+          <Layers size={28} className={styles.logoIcon} />
+          <span>PDFSuite</span>
+        </div>
+        <nav className={styles.nav}>
+          <Link href="/pricing" className="btn-secondary">Pricing</Link>
+          <Link href="/dashboard" className="btn-primary">Go to Dashboard</Link>
+        </nav>
+      </header>
+
       <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
+        <section className={styles.hero}>
+          <h1 className={styles.title}>
+            Master Your Documents with <br />
+            <span className="text-gradient">Ultimate Precision.</span>
+          </h1>
+          <p className={styles.subtitle}>
+            Compress, split, merge, and sign PDFs securely in your browser. 
+            No more bloated files or missing signatures.
           </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          <div className={styles.ctaGroup}>
+            <Link href="/dashboard" className="btn-primary">Start for Free</Link>
+          </div>
+        </section>
+
+        <section className={styles.features}>
+          <div className={`glass-panel ${styles.featureCard}`}>
+            <div className={styles.featureIconWrap}>
+              <FileDown size={32} />
+            </div>
+            <h3>Smart Compression</h3>
+            <p>Reduce file sizes by up to 80% without losing quality. Perfect for portal uploads.</p>
+          </div>
+
+          <div className={`glass-panel ${styles.featureCard}`}>
+            <div className={styles.featureIconWrap}>
+              <Scissors size={32} />
+            </div>
+            <h3>Split & Merge</h3>
+            <p>Extract exactly what you need or combine multiple documents seamlessly.</p>
+          </div>
+
+          <div className={`glass-panel ${styles.featureCard}`}>
+            <div className={styles.featureIconWrap}>
+              <FileSignature size={32} />
+            </div>
+            <h3>Quick Signatures</h3>
+            <p>Add secure, perfectly placed digital signatures in seconds.</p>
+          </div>
+        </section>
       </main>
     </div>
   );

@@ -1,0 +1,135 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0;
+}
+
+.logo {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--text-primary);
+}
+
+.main {
+  padding: 80px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 64px;
+}
+
+.heading {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.heading h1 {
+  font-size: 3.5rem;
+}
+
+.heading p {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.pricingGrid {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.pricingCard {
+  width: 100%;
+  max-width: 380px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  transition: var(--transition-smooth);
+}
+
+.pricingCard h2 {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+.price {
+  font-size: 4rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  display: flex;
+  align-items: flex-start;
+  line-height: 1;
+}
+
+.currency {
+  font-size: 2rem;
+  margin-top: 8px;
+  margin-right: 4px;
+  color: var(--text-secondary);
+}
+
+.period {
+  font-size: 1.25rem;
+  align-self: flex-end;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+.description {
+  color: var(--text-secondary);
+  line-height: 1.5;
+  height: 48px;
+}
+
+.featuresList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-grow: 1;
+}
+
+.featuresList li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-primary);
+}
+
+.checkIcon {
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.premiumCard {
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-glow);
+}
+
+.popularBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--accent-gradient);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.pricingCard button, .pricingCard a {
+  width: 100%;
+  text-align: center;
+}
