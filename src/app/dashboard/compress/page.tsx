@@ -1,15 +1,55 @@
 "use client";
 
 import { useState } from "react";
-import { UploadCloud, FileDown, File as FileIcon } from "lucide-react";
+import { UploadCloud, FileDown, File as FileIcon, Loader2 } from "lucide-react";
 import styles from "./compress.module.css";
 
 export default function CompressPage() {
   const [file, setFile] = useState<File | null>(null);
+  const [isCompressing, setIsCompressing] = useState(false);
+  const [compressionLevel, setCompressionLevel] = useState("recommended");
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
+    }
+  };
+
+  const handleCompress = async () => {
+    if (!file) return;
+
+    setIsCompressing(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("level", compressionLevel);
+
+      const res = await fetch("/api/compress", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert(errorData.error || "Compression failed");
+        return;
+      }
+
+      // Download the compressed file
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `compressed_${file.name}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    } finally {
+      setIsCompressing(false);
     }
   };
 
@@ -51,14 +91,26 @@ export default function CompressPage() {
             <h3>Compression Level</h3>
             <div className={styles.optionsGrid}>
               <label className={styles.optionCard}>
-                <input type="radio" name="compression" value="recommended" defaultChecked />
+                <input 
+                  type="radio" 
+                  name="compression" 
+                  value="recommended" 
+                  checked={compressionLevel === "recommended"}
+                  onChange={(e) => setCompressionLevel(e.target.value)}
+                />
                 <div className={styles.optionContent}>
                   <h4>Recommended</h4>
                   <p>Good quality, good compression</p>
                 </div>
               </label>
               <label className={styles.optionCard}>
-                <input type="radio" name="compression" value="extreme" />
+                <input 
+                  type="radio" 
+                  name="compression" 
+                  value="extreme" 
+                  checked={compressionLevel === "extreme"}
+                  onChange={(e) => setCompressionLevel(e.target.value)}
+                />
                 <div className={styles.optionContent}>
                   <h4>Extreme</h4>
                   <p>Lower quality, highest compression</p>
@@ -68,9 +120,15 @@ export default function CompressPage() {
           </div>
           
           <div className={styles.actionArea}>
-            <button className="btn-secondary" onClick={() => setFile(null)}>Cancel</button>
-            <button className="btn-primary" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              <FileDown size={18} /> Compress PDF
+            <button className="btn-secondary" onClick={() => setFile(null)} disabled={isCompressing}>Cancel</button>
+            <button 
+              className="btn-primary" 
+              style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
+              onClick={handleCompress}
+              disabled={isCompressing}
+            >
+              {isCompressing ? <Loader2 size={18} className="spin" /> : <FileDown size={18} />}
+              {isCompressing ? "Compressing..." : "Compress PDF"}
             </button>
           </div>
         </div>
