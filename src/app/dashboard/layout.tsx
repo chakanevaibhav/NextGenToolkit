@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { LayoutDashboard, FileUp, Settings } from "lucide-react";
 import { getServerSession } from "next-auth/next";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/authOptions";
 import styles from "./dashboard.module.css";
@@ -11,21 +12,25 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const session = await getServerSession(authOptions);
+  
+  if (!session || !session.user) {
+    redirect("/api/auth/signin");
+  }
+
   let plan = "Free Plan";
   let actionsUsed = 0;
   let maxActions = 3;
   let percent = 0;
 
-  if (session && session.user) {
-    const user = await prisma.user.findUnique({
-      where: { id: (session.user as any).id },
-    });
-    if (user) {
-      plan = user.subscriptionPlan === "premium" ? "Premium Plan" : "Free Plan";
-      actionsUsed = user.actionsUsed;
-      maxActions = user.subscriptionPlan === "premium" ? Infinity : 3;
-      percent = maxActions === Infinity ? 100 : (actionsUsed / maxActions) * 100;
-    }
+  const user = await prisma.user.findUnique({
+    where: { id: (session.user as any).id },
+  });
+  
+  if (user) {
+    plan = user.subscriptionPlan === "premium" ? "Premium Plan" : "Free Plan";
+    actionsUsed = user.actionsUsed;
+    maxActions = user.subscriptionPlan === "premium" ? Infinity : 3;
+    percent = maxActions === Infinity ? 100 : (actionsUsed / maxActions) * 100;
   }
 
   return (

@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { FileDown, Scissors, FileSignature, Layers } from "lucide-react";
 import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/authOptions";
 import styles from "./page.module.css";
 
 export default async function Home() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
 
   return (
     <div className="container">
