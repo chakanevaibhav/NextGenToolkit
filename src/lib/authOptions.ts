@@ -26,7 +26,13 @@ export const authOptions: NextAuthOptions = {
             data: {
               name: "Test User",
               email: "test@example.com",
+              subscriptionPlan: "premium",
             }
+          });
+        } else if (user.subscriptionPlan !== "premium") {
+          user = await prisma.user.update({
+            where: { id: user.id },
+            data: { subscriptionPlan: "premium" },
           });
         }
         return { id: user.id, name: user.name, email: user.email };

@@ -136,9 +136,18 @@ export default function CompressPage() {
                 </div>
                 <div className={styles.statItem}>
                   <span>Saved:</span>
-                  <strong>{(((file.size - compressedFile.size) / file.size) * 100).toFixed(0)}%</strong>
+                  <strong>
+                    {(((file.size - compressedFile.size) / file.size) * 100).toFixed(0)}%
+                  </strong>
                 </div>
               </div>
+              
+              {compressedFile.size >= file.size && (
+                <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginTop: "12px" }}>
+                  This PDF is already highly optimized. We preserved the original file to prevent size increases.
+                </p>
+              )}
+
               <div className={styles.actionArea} style={{ marginTop: '20px' }}>
                 <button className="btn-secondary" onClick={() => {
                   setFile(null);

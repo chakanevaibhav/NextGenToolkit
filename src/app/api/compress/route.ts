@@ -54,10 +54,13 @@ export async function POST(req: Request) {
     fs.writeFileSync(inputPath, buffer);
 
     const gsLevel = compressionLevel === "extreme" ? "/screen" : "/ebook";
+    const gsPath = fs.existsSync("/opt/homebrew/bin/gs") 
+      ? "/opt/homebrew/bin/gs" 
+      : fs.existsSync("/usr/local/bin/gs") ? "/usr/local/bin/gs" : "gs";
 
     try {
       // Run Ghostscript
-      await execFileAsync("gs", [
+      await execFileAsync(gsPath, [
         "-sDEVICE=pdfwrite",
         "-dCompatibilityLevel=1.4",
         `-dPDFSETTINGS=${gsLevel}`,
@@ -69,12 +72,19 @@ export async function POST(req: Request) {
       ]);
 
       // Read compressed file
-      const compressedBuffer = fs.readFileSync(outputPath);
-      const actualCompressedSize = compressedBuffer.byteLength;
+      let finalBuffer = fs.readFileSync(outputPath);
+      let finalSize = finalBuffer.byteLength;
 
       // Clean up temp files
       fs.unlinkSync(inputPath);
       fs.unlinkSync(outputPath);
+
+      // If Ghostscript somehow made the file larger (happens with already-optimized PDFs),
+      // just return the original file to prevent negative compression!
+      if (finalSize >= buffer.byteLength) {
+        finalBuffer = buffer;
+        finalSize = buffer.byteLength;
+      }
 
       // Increment action usage since the action was "successful"
       await prisma.user.update({
@@ -86,12 +96,12 @@ export async function POST(req: Request) {
       });
 
       // Return the actually compressed file
-      return new NextResponse(compressedBuffer, {
+      return new NextResponse(finalBuffer, {
         status: 200,
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename="compressed_${file.name}"`,
-          "X-File-Size": actualCompressedSize.toString(),
+          "X-File-Size": finalSize.toString(),
         },
       });
     } catch (gsError) {
