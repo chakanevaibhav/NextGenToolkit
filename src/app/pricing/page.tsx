@@ -1,10 +1,49 @@
+"use client";
+
 import Link from "next/link";
 import { Check } from "lucide-react";
+import Script from "next/script";
 import styles from "./pricing.module.css";
 
 export default function Pricing() {
+  const handleUpgrade = async () => {
+    try {
+      const res = await fetch("/api/razorpay/create-order", { method: "POST" });
+      const order = await res.json();
+
+      if (order.error) {
+        alert("Failed to create order: " + order.error);
+        return;
+      }
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "dummy",
+        amount: order.amount,
+        currency: order.currency,
+        name: "PDFSuite",
+        description: "Premium Plan Upgrade",
+        order_id: order.id,
+        handler: function (response: any) {
+          alert("Payment successful! You are now a Premium member.");
+          // Ideally redirect to dashboard here
+          window.location.href = "/dashboard";
+        },
+        theme: {
+          color: "#6366f1",
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
+  };
+
   return (
     <div className="container">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
       <header className={styles.header}>
         <Link href="/" className={styles.logo}>
           <span>PDFSuite</span>
@@ -52,7 +91,7 @@ export default function Pricing() {
               <li><Check size={16} className={styles.checkIcon} /> Maximum Compression</li>
               <li><Check size={16} className={styles.checkIcon} /> Priority Support</li>
             </ul>
-            <button className="btn-primary">Upgrade Now</button>
+            <button className="btn-primary" onClick={handleUpgrade}>Upgrade Now</button>
           </div>
         </div>
       </main>
